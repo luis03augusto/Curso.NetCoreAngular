@@ -45,10 +45,6 @@ export class EventoEditComponent implements OnInit {
     this.carregarEvento();
   }
 
-  validation() {
-    
-  }
-
   carregarEvento() {
       const idEvento = +this.router.snapshot.paraMap.get('id');
       this.eventoService.getEventoById(idEvento)
@@ -89,7 +85,66 @@ export class EventoEditComponent implements OnInit {
 
   criaLote(lote: any): FormGroup {
     return this.fb.group({
-
+      id: [lote.id],
+      nome: [lote.nome, Validators.required],
+      quantidade: [lote.quantidade, Validators.required],
+      preco: [lote.preco, Validators.required],
+      dataInicio: [lote.dataInicio, Validators.required],
+      dataFim: [lote.dataFim, Validators.required]
     });
   }
+
+  criaRedeSocial(redeSocial: any): FormGroup {
+    return this.fb.group({
+      id: [redeSocial.id],
+      nome: [redeSocial.nome, Validators.required],
+      url: [redeSocial.url, Validators.required]
+    });
+  }
+
+  adicionarLote() {
+    this.lotes.push(this.criaLote({ id: 0 }));
+  }
+
+  adicionarRedeSocial(id: number) {
+    this.lotes.removeAt(id);
+  }
+
+  onFileChange(evento: any, file: FileList) {
+    const reader = new FileReader();
+    
+    reader.onload = (event: any) => this.imagemURL = event.target.result;
+
+    this.file = evento.target.files;
+    reader.readAsDataURL(file[0]);
+    
+  }
+
+  salvarEvento() {
+    this.evento = Object.assign({ id: this.evento.id }, this.registerForm.value);
+    this.evento.imgUrl = this.fileNameToUpdate;
+
+    this.uploadImagem();
+
+    this.eventoService.putEvento(this.evento).subscrible(
+      () => {
+          this.toastr.success('Editado com sucesso!');
+      }, error => {
+        this.toastr.error(`Error ao editar: ${error}`);
+      }
+    );
+  }
+
+  uploadImagem() {
+      if (this.registerForm.get('imagemURL').value !== '') {
+        this.eventoService.postUpload(this.file, this.fileNameToUpdate)
+          .subscrible(
+            () => {
+              this.dataAtual = new DataCue().getMilliseconds().toString();
+              this.imagemURL = `http://localhost:5000/resources/images/${this.evento.imgUrl}?_ts=${this.dataAtual}`;
+            }
+          );        
+      }
+  }
+
 }

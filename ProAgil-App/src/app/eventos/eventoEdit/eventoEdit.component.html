@@ -88,11 +88,14 @@
         </tab>
         <tab heading="Lotes">
           <div>
-            <div >
-              <fieldset class="form-group">
+            <div formArrayName="lotes" *ngFor="let lote of lotes.controls; let i=index" >
+              <fieldset [formGroupName]="i" class="form-group">
                 <legend class="d-flex justify-content-between capitalize">
-                  {{'Lotes'}}
-                  <button class="btn btn-sm btn-warning mb-1">remove</button>
+                  {{ lotes.get(i+'.nome').value === ''?
+                    'Lotes' :
+                    lotes.get(i+'.name').value
+                  }}
+                  <button class="btn btn-sm btn-warning mb-1" (click)="removeLote(i)">remove</button>
                 </legend>
                 <div class="row">
                   <div class="form-group col-md-4">
